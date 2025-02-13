@@ -9,12 +9,13 @@ oh boi i sure hope this compiles everywhere. if not linux bros winning so...
 Tried to do a termox version but yeah nah i tactically gave up (no really i did time crunch and all);
 
 oh yeah to compile (idk for windows i've never compiled cmake outside unix):
-
+```c++
 git clone https://github.com/Layatan/Sharad-Ncurses.git
 mkdir Sharad-Ncurses/build && cd Sharad-Ncurses/build
 cmake ..
 make
 
-./sharad (to run)
+./sharad #(to run)
+```
 
  (btw you can take that executable wherever you want but later releases will likely need local folder(s) for save game)
