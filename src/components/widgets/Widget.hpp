@@ -1,13 +1,8 @@
 #pragma once
 
 #include <ncurses.h>
-#include <string>
 
-struct cords { // used for sizing and location (su mi :p). ncurses goes y then x so i ought to follow but i have morals so no
-    int x = 0, y = 0; //may as well set defaults 
-    cords(int x_val, int y_val) : x(x_val), y(y_val){}
-    cords(){} //welp hope this never causes an issue
-};
+#include "../tools.hpp"
 
 class Widget {
 public:
@@ -39,6 +34,7 @@ public:
         return toRet;
     }
     virtual int keyPressed(int key) = 0;
+    
 protected:
     WINDOW* win; // ncurses window for the widget
     int x=0, y=0, width=0, height=0;

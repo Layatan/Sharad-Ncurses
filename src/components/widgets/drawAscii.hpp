@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ncurses.h>
 #include <string_view>
 #include <string>
 #include <codecvt>

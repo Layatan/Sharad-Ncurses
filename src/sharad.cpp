@@ -1,24 +1,11 @@
 #include "sharad.hpp"
 
 sharad::sharad() : running(false) {}
-sharad::~sharad() { endwin(); }
+sharad::~sharad() { std::cout << "Bye Chummer...\n"; }
 
 int convertRGB(int value);
 
 void sharad::setup(){
-    // Initialize ncurses
-    setlocale(LC_ALL, "");
-    initscr();
-    getmaxyx(stdscr, screenSize.y, screenSize.x);
-    start_color();
-    use_default_colors();
-    noecho();
-    cbreak();
-    curs_set(0);
-    timeout(0); // Non-blocking getch()
-    keypad(stdscr, TRUE); // Enable keypad for special keys
-    mousemask(ALL_MOUSE_EVENTS, NULL); // Enable all mouse events
-    nodelay(stdscr, TRUE); // Make getch() non-blocking
     running = true; // keep don't del
     frameCount = 0;
 
@@ -29,14 +16,13 @@ void sharad::setup(){
     Menu.push_back({U"Game Settings", U"Theme", U"Mandem Involved <3"}); //setting
     Menu.push_back({gameCredits});
 
-    drawMenu tmproot = {0, 0, &Menu[0], true};
+    drawMenu tmproot = {&Menu[0], true};
     rootMenu = tmproot; //not great but this is the three stage initialisation required. Now to do this(kinda) for all of em
-    rootMenu.draw(0, screenSize.y-13); //otherwise wrong location - no it cant be set on tmp declaration (try it if you dotn believe me)
 
-    drawMenu tmpsett = {0, 0, &Menu[1], true, &rootMenu};
+    drawMenu tmpsett = {&Menu[1], true, &rootMenu};
     settingsMenu = tmpsett;
 
-    drawMenu tmpcred = {0, 0, &Menu[2], false, &settingsMenu};
+    drawMenu tmpcred = {&Menu[2], false, &settingsMenu};
     creditsMenu = tmpcred;
 
 
@@ -46,7 +32,7 @@ void sharad::setup(){
 
     settingsMenu.linkExecute(2, &creditsMenu);
 
-    focusElements.second.push_back(&rootMenu);
+    focusElements.second.push_back(&rootMenu); //n main menu focus on main rootmenu
     focusElements.first = 0;
 }
 
@@ -85,13 +71,12 @@ void sharad::draw(){
             drawAscii titleBox = {screenSize.x-asciiArt::title.width-2, 2, asciiArt::title.width, asciiArt::title.height};
             titleBox.draw(asciiArt::title.artwork);
 
-            if (frameCount%60 < 30) {
+            if (frameCount%60 < 30) { //blinking cursor
                 drawAscii titleCursorBox = {screenSize.x-asciiArt::titleCursor.width-45, 11, asciiArt::titleCursor.width, asciiArt::titleCursor.height};
                 titleCursorBox.draw(asciiArt::titleCursor.artwork);
             }
-            // mvprintw(17,screenSize.x-asciiArt::title.width+25,"based on: Sharad Ratatui by ProHallad.");
 
-            rootMenu.draw();
+            rootMenu.draw(0, screenSize.y - rootMenu.getSize().y, true);
 
 
         } break;
@@ -162,5 +147,4 @@ void sharad::run(){
         frameCount++;
         napms(16); //roughly 60fps apparently
     }
-    
 }

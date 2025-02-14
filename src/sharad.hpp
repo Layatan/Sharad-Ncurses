@@ -1,21 +1,14 @@
 #pragma once
 #include <ncurses.h>
 
+#include "components/tools.hpp"
 #include "components/ui/ascii_art.hpp"
-#include "components/drawAscii.hpp"
-#include "components/drawMenu.hpp"
+#include "components/widgets/drawAscii.hpp"
+#include "components/widgets/drawMenu.hpp"
 #include "components/ui/credits.hpp"
 
 #include <iostream>
 #include <queue>
-
-
-// struct cords { //moved to widget.hpp 
-//     int x = 0, y = 0; //may as well set defaults 
-//     cords(int x_val, int y_val) : x(x_val), y(y_val){}
-//     cords(){} //welp hope this never causes an issue
-// }; 
-// enum class PAGE { MAIN_MENU, IN_GAME }; // moved to drawMenu.hpp (ik but this was the easiest i'll fix someday) 
 
 class sharad {
 public:

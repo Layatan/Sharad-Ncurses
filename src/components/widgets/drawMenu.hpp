@@ -1,19 +1,17 @@
 #pragma once
 
-#include <ncurses.h>
 #include <string>
 #include <vector>
 #include <algorithm>
 #include <codecvt>
+
 #include "Widget.hpp"
 
-enum class PAGE { MAIN_MENU, IN_GAME };
 
 class drawMenu : public Widget {
 public:
-    drawMenu(int x, int y, std::vector<std::u32string>* MenuOptions, bool useSelection = false, drawMenu* summonedBy = nullptr)
-        : Widget(x, y, 0, 3) { 
-            pointerMenu = MenuOptions;
+    drawMenu(std::vector<std::u32string>* MenuOptions, bool useSelection = true, drawMenu* summonedBy = nullptr)
+        : pointerMenu(MenuOptions), Widget(0, 0, 0, 3) { 
 
             for (auto entry : *pointerMenu) {
                 int curr = 0;
@@ -32,30 +30,9 @@ public:
             
             toggleSelection(useSelection);
             wresize(win, height, width);
-
-            //subsequent menus are anchored, tl until overflow then bl (can be better implemented :/)
-            if (summonedBy != nullptr) {
-                cords getPrevStart = (*summonedBy).getStart(); 
-                cords getPrevSize = (*summonedBy).getSize();
-                cords screenSize; getmaxyx(stdscr, screenSize.y, screenSize.x);
-                
-                x = getPrevStart.x+getPrevSize.x+2;
-                if (getPrevStart.y + height <= screenSize.y) 
-                    y = getPrevStart.y;
-                else y = screenSize.y - height;
-                
-                prevLink = summonedBy;
-    
-                draw(x, y); //maybe i'm just tires but i'm getting to the point shit stops making sense and i'm taking shortcuts
-            }
         }
-    drawMenu(cords pos, std::vector<std::u32string>*MenuOptions) 
-        : drawMenu(pos.x, pos.y, MenuOptions) {}
     
-    drawMenu(): Widget(){}; //handling setting one drawMenu to another
-    drawMenu(const drawMenu& other) 
-        : selection(other.selection), prevLink(other.prevLink), nextLink(other.nextLink),
-            pointerMenu(other.pointerMenu) {}
+    drawMenu(): Widget(){}; 
     drawMenu& operator=(const drawMenu& other){
         if (this == &other) return *this;
         Widget::operator=(other);
@@ -67,16 +44,20 @@ public:
     }
 
 
-    void draw(int drawX = 8008135, int drawY = 8008135){ //i cant set the default value to x and y wtf man
+    void draw(int AnchorX, int AnchorY, bool forceRedraw = false){ //i cant set the default value to x and y wtf man
         werase(win);
-
-        static uint8_t blinker = 0;
-        blinker == 60 ? blinker = 0 : blinker++; 
         
-        if(drawX != 8008135 || drawY != 8008135) {
-            x = drawX; y = drawY;
-            delwin(win);
-            win = newwin(height, width, y, x); 
+        if (AnchorX != x || AnchorY != y) {
+            cords screenSize;
+            getmaxyx(stdscr, screenSize.y, screenSize.x);
+
+            if (forceRedraw || prevLink == nullptr) { 
+                x = AnchorX;
+                AnchorY + height < screenSize.y ? y = AnchorY : y = screenSize.y - height; //make sure new draw menu's don't overflow bottom 
+
+                delwin(win);
+                win = newwin(height, width, y, x);
+            }
         }
 
         // box(win, 0, 0); //debug
@@ -92,27 +73,26 @@ public:
         int currSpacer = 2;
         for (int i = 0; i < (*pointerMenu).size(); i++){
             auto entry = (*pointerMenu)[i];
+
             if (i == selection){
                 init_pair(1, COLOR_YELLOW, -1);
                 wattron(win, COLOR_PAIR(1));
-                if (blinker < 40){
-                    if (nextLink == nullptr || (*nextLink).hasSelection() == false) {
-                        mvwprintw(win, currSpacer+i*2-1, 3, "┎");
-                        mvwprintw(win, currSpacer+i*2+1, 3, "┗─");
-                    }
-                    
-                    entry = U"█ " + entry;
-                } else entry = U"█ ";
+
+                entry = U"█ " + entry;
+                if (nextLink == nullptr || (*nextLink).hasSelection() == false) {
+                    mvwprintw(win, i*2+currSpacer-1, 3, "┎");
+                    mvwprintw(win, i*2+currSpacer+1, 3, "┗─");
+                }
             }
 
-            mvwprintw(win, currSpacer+i*2, 3, "%s", convU32_U8.to_bytes(entry).c_str());
-            currSpacer += std::count(entry.begin(), entry.end(), '\n');
+            // currSpacer += std::count(entry.begin(), entry.end(), '\n'); //incase any multi-lines
+            mvwprintw(win, i*2+currSpacer, 3, "%s", convU32_U8.to_bytes(entry).c_str());
             
             wattroff(win, COLOR_PAIR(1));
         }
         
         if (nextLink != nullptr) {
-            (*nextLink).draw();
+            (*nextLink).draw(x+width+2, y);
         }
         
 
@@ -178,6 +158,7 @@ public:
         }
     }
 
+
     void toggleSelection(bool useSelection){
         useSelection ? selection = 0 : selection = -1;
     }
@@ -190,8 +171,10 @@ public:
         nextLink == nullptr ? toRet = false : toRet = true;
         return toRet;
     }
+
+
 protected:
-    int selection = -1;
+    int selection = 0;
     drawMenu* prevLink = nullptr; drawMenu* nextLink = nullptr;
     std::vector<std::pair<int, drawMenu*>> executeNewMenu; //takes index and next drawMenu pointer
     std::vector<std::pair<int, drawMenu*>> executeNewPage; //really only one page but i'd like room to grow in case
