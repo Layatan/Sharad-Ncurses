@@ -48,12 +48,12 @@ public:
         werase(win);
         
         if (AnchorX != x || AnchorY != y) {
-            cords screenSize;
-            getmaxyx(stdscr, screenSize.y, screenSize.x);
+            // cords screenSize;
+            // getmaxyx(stdscr, screenSize.y, screenSize.x);
 
             if (forceRedraw || prevLink == nullptr) { 
                 x = AnchorX;
-                AnchorY + height < screenSize.y ? y = AnchorY : y = screenSize.y - height; //make sure new draw menu's don't overflow bottom 
+                AnchorY + height < screenSize.y ? y = AnchorY : y = screenSize.y - height; //actively make sure new draw menu's don't overflow bottom 
 
                 delwin(win);
                 win = newwin(height, width, y, x);
@@ -78,7 +78,7 @@ public:
                 init_pair(1, COLOR_YELLOW, -1);
                 wattron(win, COLOR_PAIR(1));
 
-                entry = U"█ " + entry;
+                frameCount%60 < 30 ? entry = U"█ " + entry : entry = U"│ " + entry;
                 if (nextLink == nullptr || (*nextLink).hasSelection() == false) {
                     mvwprintw(win, i*2+currSpacer-1, 3, "┎");
                     mvwprintw(win, i*2+currSpacer+1, 3, "┗─");
@@ -87,8 +87,9 @@ public:
 
             // currSpacer += std::count(entry.begin(), entry.end(), '\n'); //incase any multi-lines
             mvwprintw(win, i*2+currSpacer, 3, "%s", convU32_U8.to_bytes(entry).c_str());
-            
             wattroff(win, COLOR_PAIR(1));
+            
+            
         }
         
         if (nextLink != nullptr) {
@@ -124,17 +125,18 @@ public:
             }
             doExcecute();
         } break;
-        case KEY_LEFT: case 27 /* escape key but it lags it idk why */: {
-            // if (prevLink != nullptr) { //maybe i'm just tires but this logic makes no sense. 
-            //     break;   //think i meant to do if on main menu ignore back input but i needed it afterwards
-            // }
+        case KEY_LEFT: case 27:{
             if (prevLink == nullptr && selection == optionCount-1) key = -1; //quit if on quit
             if (nextLink != nullptr) {
                 if((*nextLink).hasNext() && (*nextLink).hasSelection() == false)
                     (*nextLink).keyPressed(key);
-                else nextLink = nullptr;
+                else if ((*nextLink).hasSelection()) {
+                    (*nextLink).nextLink = nullptr;
+                    nextLink = nullptr;
+                }
                 break;
             }
+            
 
         } break;
         default:
@@ -148,12 +150,19 @@ public:
         executeNewMenu.push_back(std::make_pair(index, menuToOpen));
     }
     void linkExecute(int index, PAGE pageToOpen){
-        
+        executeNewPage.push_back(std::make_pair(index, pageToOpen));
     }
     void doExcecute(){
         for (auto toCheck: executeNewMenu) {
             if (selection == toCheck.first) {
                 nextLink =  toCheck.second;
+                return;
+            }
+        }
+        for (auto toCheck: executeNewPage) {
+            if (selection == toCheck.first) {
+                currentPage =  toCheck.second;
+                return;
             }
         }
     }
@@ -177,7 +186,7 @@ protected:
     int selection = 0;
     drawMenu* prevLink = nullptr; drawMenu* nextLink = nullptr;
     std::vector<std::pair<int, drawMenu*>> executeNewMenu; //takes index and next drawMenu pointer
-    std::vector<std::pair<int, drawMenu*>> executeNewPage; //really only one page but i'd like room to grow in case
+    std::vector<std::pair<int, PAGE>> executeNewPage; //really only one page but i'd like room to grow in case
     std::vector<std::u32string>* pointerMenu;
     std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convU32_U8; //If used one more time move to Widget
 };

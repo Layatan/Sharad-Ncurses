@@ -14,7 +14,7 @@ void sharad::setup(){
 
     Menu.push_back({U"Continue ", U"Start New Game", U"Load Game", U"Options", U"Quit Game... Bye Chummer"});
     Menu.push_back({U"Game Settings", U"Theme", U"Mandem Involved <3"}); //setting
-    Menu.push_back({gameCredits});
+    Menu.push_back({asciiArt::credits.artwork});
 
     drawMenu tmproot = {&Menu[0], true};
     rootMenu = tmproot; //not great but this is the three stage initialisation required. Now to do this(kinda) for all of em

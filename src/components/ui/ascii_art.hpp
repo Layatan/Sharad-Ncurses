@@ -100,4 +100,29 @@ const AsciiArtwork titleCursor = {(std::string_view{
 ╚═══════╝)"
 })};
 
+const AsciiArtwork credits = {(std::string_view{
+  R"(Made (with love&hate) by:
+   Bai Omar Laye
+
+   Inspired (and permitted) By:
+   ProHaller's Sharad Ratatui - tnx fam
+   & contributors
+
+   Powered By:
+   Ncurses
+   & contributors
+
+   Remember its always more fun with
+   friends, go out there and join a
+   group. Try out these subreddits:
+   r/Shadowrun
+   r/ShadowrunHaven
+   they get annoying about the edition
+   to play so just go 5e.
+   
+   Oh and play the HBS Shadowrun
+   Trilogy and Cirion's Trilogy After.
+   "copyright: 2024")"
+})};
+
 } //namespace end

@@ -1,5 +1,9 @@
 #include "sharad.hpp"
 
+PAGE currentPage = PAGE::MAIN_MENU;
+uint64_t frameCount = 0;
+cords screenSize = {0,0};
+
 int main() {
     // Initialize ncurses
     setlocale(LC_ALL, "");

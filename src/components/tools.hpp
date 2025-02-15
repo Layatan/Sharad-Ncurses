@@ -7,3 +7,7 @@ struct cords { //moved to widget.hpp
 }; 
 
 enum class PAGE { MAIN_MENU, IN_GAME }; // moved to drawMenu.hpp (ik but this was the easiest i'll fix someday) 
+
+extern PAGE currentPage;
+extern uint64_t frameCount;
+extern cords screenSize;
