@@ -75,8 +75,8 @@ public:
             auto entry = (*pointerMenu)[i];
 
             if (i == selection){
-                init_pair(1, COLOR_YELLOW, -1);
-                wattron(win, COLOR_PAIR(1));
+                init_pair(2, COLOR_YELLOW, -1);
+                wattron(win, COLOR_PAIR(2));
 
                 frameCount%60 < 30 ? entry = U"█ " + entry : entry = U"│ " + entry;
                 if (nextLink == nullptr || (*nextLink).hasSelection() == false) {
@@ -87,8 +87,8 @@ public:
 
             // currSpacer += std::count(entry.begin(), entry.end(), '\n'); //incase any multi-lines
             mvwprintw(win, i*2+currSpacer, 3, "%s", convU32_U8.to_bytes(entry).c_str());
-            wattroff(win, COLOR_PAIR(1));
-            
+            wattroff(win, COLOR_PAIR(2));
+            //trippy
             
         }
         
