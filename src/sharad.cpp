@@ -12,9 +12,11 @@ void sharad::setup(){
     currentPage = PAGE::MAIN_MENU;
     minScreenSize = {190, 50};
 
-    Menu.push_back({U"Continue ", U"Start New Game", U"Load Game", U"Options", U"Quit Game... Bye Chummer"});
-    Menu.push_back({U"Game Settings", U"Theme", U"Mandem Involved <3"}); //setting
-    Menu.push_back({asciiArt::credits.artwork});
+    Menu.push_back({U"Continue ", U"Start New Game", U"Load Game", U"Options", U"Quit Game... Bye Chummer"});//main
+    Menu.push_back({U"Game Settings", U"Theme", U"Mandem Involved <3"}); //settings
+    
+    Menu.push_back({asciiArt::credits.artwork}); //credits
+    Menu.push_back({U"Cycle Setting^Setting1^Setting2^Setting3", U"Toggle Setting^On^Off"});
 
     drawMenu tmproot = {&Menu[0], true};
     rootMenu = tmproot; //not great but this is the three stage initialisation required. Now to do this(kinda) for all of em
@@ -25,12 +27,15 @@ void sharad::setup(){
     drawMenu tmpcred = {&Menu[2], false, &settingsMenu};
     creditsMenu = tmpcred;
 
-
+    drawMenu tmpgsett = {&Menu[3], true, &settingsMenu};
+    gameSettings = tmpgsett;
 
     //all the page linkages. int is index of menu option and pointer is where it leads to
     rootMenu.linkExecute(3, &settingsMenu);
+    rootMenu.linkExecute(0, PAGE::IN_GAME);
 
     settingsMenu.linkExecute(2, &creditsMenu);
+    settingsMenu.linkExecute(0, &gameSettings);
 
     focusElements.second.push_back(&rootMenu); //n main menu focus on main rootmenu
     focusElements.first = 0;
@@ -100,6 +105,7 @@ void sharad::draw(){
 }
 
 void sharad::keyPressed(int key){
+
     switch (key) {
     case 'q':
         running = false;
@@ -143,8 +149,8 @@ void sharad::run(){
 
         update();
         draw();
-
+        
         frameCount++;
-        napms(16); //roughly 60fps apparently
+        napms(16); //roughly 60fps apparently, according to copilot helps not miss input
     }
 }

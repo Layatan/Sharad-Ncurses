@@ -28,6 +28,7 @@ public:
             int alignSpacer = 4 /* left aligning */, centerSpacer = 3; /* actual border/frame spacer */
             width += (alignSpacer+centerSpacer*2);
             
+            prevLink = summonedBy;
             toggleSelection(useSelection);
             wresize(win, height, width);
         }
@@ -48,10 +49,7 @@ public:
         werase(win);
         
         if (AnchorX != x || AnchorY != y) {
-            // cords screenSize;
-            // getmaxyx(stdscr, screenSize.y, screenSize.x);
-
-            if (forceRedraw || prevLink == nullptr) { 
+            if (forceRedraw || prevLink != nullptr) { 
                 x = AnchorX;
                 AnchorY + height < screenSize.y ? y = AnchorY : y = screenSize.y - height; //actively make sure new draw menu's don't overflow bottom 
 
@@ -104,16 +102,15 @@ public:
         int optionCount = (*pointerMenu).size();
         switch (key) {
         case KEY_UP: case KEY_DOWN:{
-            if (selection == -1) break;
+            // if (selection == -1) break; //doubt it does anything anymore
             if (nextLink != nullptr && (*nextLink).hasSelection()) {
                 (*nextLink).keyPressed(key);
                 break;
             }
 
-            if (key == KEY_DOWN) 
-                selection+2 > optionCount ? selection = 0 : selection++;
-            else 
-                selection == 0 ? selection = optionCount-1 : selection--;
+            if (nextLink != nullptr && (*nextLink).hasSelection() == false) nextLink = nullptr;
+            if (key == KEY_DOWN) selection+2 > optionCount ? selection = 0 : selection++;
+            else selection == 0 ? selection = optionCount-1 : selection--;
         } break;
         case KEY_RIGHT: case '\n': {
             if (nextLink != nullptr){
@@ -125,25 +122,27 @@ public:
             }
             doExcecute();
         } break;
-        case KEY_LEFT: case 27:{
-            if (prevLink == nullptr && selection == optionCount-1) key = -1; //quit if on quit
-            if (nextLink != nullptr) {
-                if((*nextLink).hasNext() && (*nextLink).hasSelection() == false)
-                    (*nextLink).keyPressed(key);
-                else if ((*nextLink).hasSelection()) {
-                    (*nextLink).nextLink = nullptr;
-                    nextLink = nullptr;
-                }
+        case KEY_LEFT: case KEY_BACKSPACE: { //escape key lags (for me) so backspace
+            if (prevLink == nullptr && selection == optionCount-1) { //quiting
+                key = -1;
                 break;
+            } //quit if on quit
+            if (nextLink != nullptr && (*nextLink).hasNext() == false){
+                nextLink = nullptr;
             }
-            
+            else if (nextLink != nullptr && (*nextLink).hasSelection()) {
+                // (*pointerMenu)[0] = U"Tried";
+                (*nextLink).keyPressed(key);
+            }
+            else if (nextLink != nullptr && (*nextLink).hasSelection() == false) nextLink = nullptr;
+            else nextLink = nullptr;
 
         } break;
         default:
             break;
         }
         
-        return key; //success or fail (-1) (emergency quit)
+        return key; // return success or fail/quit (-1)
     }
 
     void linkExecute(int index, drawMenu* menuToOpen){
