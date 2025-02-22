@@ -23,15 +23,15 @@ public:
         werase(win);
         // box(win, 0, 0); // extra space when using some unicode, i assume cus wide char... anyway they need an extra 1 to the width 
         if (useRGB && canChangeColor) {
-            if (bCol != 0 && rCol == 1000) bCol -= rgbStep;
-            else if (rCol == 1000 && gCol != 1000)  gCol += rgbStep;
-            else if (rCol != 0 && gCol == 1000) rCol -= rgbStep;
-            else if (gCol == 1000 && bCol != 1000) bCol += rgbStep;
-            else if (gCol != 0 && bCol == 1000) gCol -= rgbStep;
-            else if (bCol == 1000 && rCol != 1000) rCol += rgbStep;
+            // if (bCol != 0 && rCol == 1000) bCol -= rgbStep;
+            // else if (rCol == 1000 && gCol != 1000)  gCol += rgbStep;
+            // else if (rCol != 0 && gCol == 1000) rCol -= rgbStep;
+            // else if (gCol == 1000 && bCol != 1000) bCol += rgbStep;
+            // else if (gCol != 0 && bCol == 1000) gCol -= rgbStep;
+            // else if (bCol == 1000 && rCol != 1000) rCol += rgbStep;
     
-            init_color(8, 876, 375, 555);
-            init_pair(2, 8, COLOR_RED);
+            // init_color(8, 876, 375, 555);
+            // init_pair(2, 8, COLOR_RED);
             // refresh();
             // for (char32_t c : art) {
             //     if (c == U'\n') 
@@ -39,9 +39,9 @@ public:
             //     else
             //         wprintw(win, "%s", convU32_U8.to_bytes(U'A').c_str());
             // }
-            attron(COLOR_PAIR(1));
+            // attron(COLOR_PAIR(1));
             printw("r:%d,g:%d,b:%d, COL:%d", rCol, gCol, bCol, COLORS);
-            attroff(COLOR_PAIR(2));
+            // attroff(COLOR_PAIR(2));
         }
         else { //your term can't change colour you bitch boy loser hahahahahah >:)
             wprintw(win, "%s", convU32_U8.to_bytes(art).c_str());

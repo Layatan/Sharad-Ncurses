@@ -12,18 +12,42 @@ class drawMenu : public Widget {
 public:
     drawMenu(std::vector<std::u32string>* MenuOptions, bool useSelection = true, drawMenu* summonedBy = nullptr)
         : pointerMenu(MenuOptions), Widget(0, 0, 0, 3) { 
-
+            int index = 0;
             for (auto entry : *pointerMenu) {
-                int curr = 0;
+                int curr = 0, tempCurr = 0, tempCurrHigh = 0;
+                bool isSetting = false;
+                std::vector<size_t> indexes;
+
                 for (char32_t c : entry) {
+                    if (c == U'^' || isSetting) {
+                        isSetting = true;
+                        if (c == U'^' && tempCurr > tempCurrHigh) {
+                            tempCurrHigh = tempCurr;
+                            tempCurr = 0;
+                        }
+                        else tempCurr++;
+
+                        break;
+                    }
                     if (c == U'\n'){
                         if (curr > width) width = curr;
                         height++;
                         curr = 0;
                     } else curr++;
                 }
+                
+                if (isSetting == true) {
+                    int spacer = 15;
+                    subSelection.push_back(std::make_pair(index, 0));/* TODO: change when save and load implemented (prolly use JSON) */
+                    int settCount = std::count(entry.begin(), entry.end(), U'^');
+                    (*pointerMenu)[index] += U"^" + convU32_U8.from_bytes(std::to_string(settCount)); //can't be asked to manage another int (its the same size as an int blow me)
+                    if (settCount == 2) curr += 2 + spacer; //cuz im using a toggle... idk might change later 
+                    else curr += tempCurrHigh + spacer;
+                }
+                
                 if (curr > width) width = curr;
                 height += 2; //two per entry, writing and bottom spacer (below the original count on widget initialisation)
+                index++;
             }
             int alignSpacer = 4 /* left aligning */, centerSpacer = 3; /* actual border/frame spacer */
             width += (alignSpacer+centerSpacer*2);
@@ -40,6 +64,9 @@ public:
         selection = other.selection;
         prevLink = other.prevLink;
         nextLink = other.nextLink;
+        executeNewMenu = other.executeNewMenu;
+        executeNewPage = other.executeNewPage;
+        subSelection = other.subSelection;
         pointerMenu = other.pointerMenu;
         return *this;
     }
@@ -81,10 +108,34 @@ public:
                     mvwprintw(win, i*2+currSpacer-1, 3, "┎");
                     mvwprintw(win, i*2+currSpacer+1, 3, "┗─");
                 }
-            }
 
+            }
+            for (auto sub : subSelection){
+                if (i == sub.first){
+                    printw("Curr Setting: %d | ", sub.second);
+
+                    int settCount = std::stoi(convU32_U8.to_bytes(entry.back()));
+                    entry.insert(entry.find(U'^'), width-entry.substr(0, entry.find(U'^')).length()-10, U' ');
+                        
+                    if (settCount == 2) {
+                        if (sub.second == 0) entry.insert(entry.find(U'^')-2, U"□─");
+                        else entry.insert(entry.find(U'^')-2, U"─■"); //on and off might change icons later
+                    }
+                    else {
+                        int startPos;
+                        for (int i = 0; i <= sub.second+1; ++i) 
+                            startPos = entry.find(U'^', startPos+1);
+                        
+                        std::u32string currSet = entry.substr(startPos+1, entry.find(U'^', startPos+1) - startPos-1);
+                        entry.insert(entry.find(U'^')-currSet.length(), currSet);
+                        // entry = entry.substr(entry.find(U'^') + 1, entry.find(U'^', entry.find(U'^') + 1) - entry.find(U'^') - 1);
+                    }
+                }
+            }
+            
+            
             // currSpacer += std::count(entry.begin(), entry.end(), '\n'); //incase any multi-lines
-            mvwprintw(win, i*2+currSpacer, 3, "%s", convU32_U8.to_bytes(entry).c_str());
+            mvwprintw(win, i*2+currSpacer, 3, "%s", convU32_U8.to_bytes(entry.substr(0, entry.find(U'^'))).c_str());
             wattroff(win, COLOR_PAIR(2));
             //trippy
             
@@ -116,6 +167,14 @@ public:
             if (nextLink != nullptr){
                 (*nextLink).keyPressed(key);
                 break; //not current focus
+            }
+            if ((*pointerMenu)[selection].find(U'^') != std::u32string::npos) {
+                for (auto& sub : subSelection){
+                    if (sub.first == selection){
+                        int settCount = std::stoi(convU32_U8.to_bytes((*pointerMenu)[selection].back()));
+                        sub.second == settCount-1 ? sub.second = 0 : sub.second++;
+                    }
+                }
             }
             if (prevLink == nullptr && selection == optionCount-1) {
                 key = -1; //quit if on quit
@@ -175,17 +234,17 @@ public:
         else return true;
     }
     bool hasNext(){
-        bool toRet = false;
-        nextLink == nullptr ? toRet = false : toRet = true;
-        return toRet;
+        if (nextLink == nullptr) return false;
+        else return true;
     }
 
 
 protected:
-    int selection = 0;
+    int selection = -1;
     drawMenu* prevLink = nullptr; drawMenu* nextLink = nullptr;
     std::vector<std::pair<int, drawMenu*>> executeNewMenu; //takes index and next drawMenu pointer
     std::vector<std::pair<int, PAGE>> executeNewPage; //really only one page but i'd like room to grow in case
+    std::vector<std::pair<int, int>> subSelection; //for setting pages with toggleable settings
     std::vector<std::u32string>* pointerMenu;
     std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convU32_U8; //If used one more time move to Widget
 };
