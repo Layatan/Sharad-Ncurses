@@ -33,4 +33,5 @@ private: //just works ignore - initialised in sharad.cpp cuz thats how Open Fram
     drawMenu settingsMenu;
     drawMenu creditsMenu; 
     drawMenu gameSettings;
+    drawMenu newSave;
 };

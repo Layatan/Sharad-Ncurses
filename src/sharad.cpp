@@ -3,8 +3,6 @@
 sharad::sharad() : running(false) {}
 sharad::~sharad() { std::cout << "Bye Chummer...\n"; }
 
-int convertRGB(int value);
-
 void sharad::setup(){
     running = true; // keep don't del
     frameCount = 0;
@@ -13,10 +11,13 @@ void sharad::setup(){
     minScreenSize = {190, 50};
 
     Menu.push_back({U"Continue ", U"Start New Game", U"Load Game", U"Options", U"Quit Game... Bye Chummer"});//main
+    
     Menu.push_back({U"Game Settings", U"Theme", U"Mandem Involved <3"}); //settings
     
     Menu.push_back({asciiArt::credits.artwork}); //credits
     Menu.push_back({U"Cycle Setting^Setting1^Setting2^Setting3", U"Toggle Setting^On^Off"});
+
+    Menu.push_back({U"New Save:^save name^idk^whats"});
 
     drawMenu tmproot = {&Menu[0], true};
     rootMenu = tmproot; //not great but this is the three stage initialisation required. Now to do this(kinda) for all of em
@@ -30,9 +31,13 @@ void sharad::setup(){
     drawMenu tmpgsett = {&Menu[3], true, &settingsMenu};
     gameSettings = tmpgsett;
 
+    drawMenu tmpnewsave = {&Menu[4], true, &rootMenu};
+    newSave = tmpnewsave;
+
     //all the page linkages. int is index of menu option and pointer is where it leads to
-    rootMenu.linkExecute(3, &settingsMenu);
     rootMenu.linkExecute(0, PAGE::IN_GAME);
+    rootMenu.linkExecute(3, &settingsMenu);
+    rootMenu.linkExecute(1, &newSave);
 
     settingsMenu.linkExecute(2, &creditsMenu);
     settingsMenu.linkExecute(0, &gameSettings);
@@ -106,22 +111,30 @@ void sharad::draw(){
 
 void sharad::keyPressed(int key){
 
-    switch (key) {
-    case 'q':
-        running = false;
+    switch (currentPage) {
+        case PAGE::MAIN_MENU:
+            switch (key) {
+            case 'q':
+                running = false;
+                break;
+            case '\t': // 9 works too cuz ascii? idk bro
+                if (focusElements.first+2 >  focusElements.second.size()) { //left is index and right is vector size, +1 to align another +1 to check if there are enough 
+                    focusElements.second.size() != 0 ? focusElements.first = 0 : focusElements.first = -1;
+                }
+            break;
+            default:
+                int maybeQuit = focusElements.second[focusElements.first]->keyPressed(key);
+                if (maybeQuit == -1) running = false;
+
+                printw("Pressed: %c, %d\n", key, key); //goes away too fast to see
+                break;
+            }
         break;
-    case '\t': // 9 works too cuz ascii? idk bro
-        if (focusElements.first+2 >  focusElements.second.size()) { //left is index and right is vector size, +1 to align another +1 to check if there are enough 
-            focusElements.second.size() != 0 ? focusElements.first = 0 : focusElements.first = -1;
-        }
-    break;
     default:
-        int maybeQuit = focusElements.second[focusElements.first]->keyPressed(key);
-        if (maybeQuit == -1) running = false;
-        
-        printw("Pressed: %c, %d\n", key, key); //goes away too fast to see
         break;
     }
+
+    
 }
 
 void sharad::mouseClicked(const MEVENT& event) {

@@ -21,8 +21,8 @@ public:
                 for (char32_t c : entry) {
                     if (c == U'^' || isSetting) {
                         isSetting = true;
-                        if (c == U'^' && tempCurr > tempCurrHigh) {
-                            tempCurrHigh = tempCurr;
+                        if (c == U'^') {
+                            if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr;
                             tempCurr = 0;
                         }
                         else tempCurr++;
@@ -37,18 +37,23 @@ public:
                 }
                 
                 if (isSetting == true) {
-                    int spacer = 15;
+                    if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr; // check for the last setting
+
+                    int spacer = entry.find(U'^')+3; //incase setting is highlighted (+2) & index -> int shift(+1)
                     subSelection.push_back(std::make_pair(index, 0));/* TODO: change when save and load implemented (prolly use JSON) */
                     int settCount = std::count(entry.begin(), entry.end(), U'^');
                     (*pointerMenu)[index] += U"^" + convU32_U8.from_bytes(std::to_string(settCount)); //can't be asked to manage another int (its the same size as an int blow me)
-                    if (settCount == 2) curr += 2 + spacer; //cuz im using a toggle... idk might change later 
-                    else curr += tempCurrHigh + spacer;
+                    
+                    if (settCount == 2) curr = 2 + spacer + 5; //setting space + settting title + gap
+                    else curr = tempCurrHigh + spacer + 5; //"Gap" between setting and current toggle
+                    // TODO: wtf is happening it seems like width is getting calculated using the smallest option count but why  
                 }
                 
                 if (curr > width) width = curr;
                 height += 2; //two per entry, writing and bottom spacer (below the original count on widget initialisation)
-                index++;
+                index++;   
             }
+        
             int alignSpacer = 4 /* left aligning */, centerSpacer = 3; /* actual border/frame spacer */
             width += (alignSpacer+centerSpacer*2);
             
@@ -115,7 +120,7 @@ public:
                     printw("Curr Setting: %d | ", sub.second);
 
                     int settCount = std::stoi(convU32_U8.to_bytes(entry.back()));
-                    entry.insert(entry.find(U'^'), width-entry.substr(0, entry.find(U'^')).length()-10, U' ');
+                    entry.insert(entry.find(U'^'), width-entry.substr(0, entry.find(U'^')).length()-9, U' ');
                         
                     if (settCount == 2) {
                         if (sub.second == 0) entry.insert(entry.find(U'^')-2, U"□─");
@@ -127,7 +132,7 @@ public:
                             startPos = entry.find(U'^', startPos+1);
                         
                         std::u32string currSet = entry.substr(startPos+1, entry.find(U'^', startPos+1) - startPos-1);
-                        entry.insert(entry.find(U'^')-currSet.length(), currSet);
+                        entry.replace(entry.find(U'^')-currSet.length(), currSet.length(), currSet);
                         // entry = entry.substr(entry.find(U'^') + 1, entry.find(U'^', entry.find(U'^') + 1) - entry.find(U'^') - 1);
                     }
                 }
