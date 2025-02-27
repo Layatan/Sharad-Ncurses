@@ -3,6 +3,7 @@
 PAGE currentPage = PAGE::MAIN_MENU;
 uint64_t frameCount = 0;
 cords screenSize = {0,0};
+//wait this might a *nix exclusive
 
 int main() {
     // Initialize ncurses
