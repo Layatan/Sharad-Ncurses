@@ -36,6 +36,8 @@ public:
                         else tempCurr++;
 
                         if (c == U'[' || bracketOpen) {
+                            
+                            //TODO: COMMENT EVERYTHING BELOW AND SET UP A DRAW INPUT ELEMENT
                             if(c == U'[' && curr > 2) height++; //if input box has a title go to next line otherwise takeover line
                             
                             if (c == U']') {
@@ -68,7 +70,9 @@ public:
                     if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr; // last setting width check
                     if (entry.find(U"^[") == std::u32string::npos) //cuz input firld in draw menu hijacks settings - whatever dont judge me
                         subSelection.push_back(std::make_pair(index, 0));/* TODO: change when save and load implemented (prolly use JSON) */
+                    else { //make input field
 
+                    }
                     int settTitle = 3 + entry.find(U'^'), settGap = 5; //incase setting is highlighted (+2) & index -> int shift(+1)
                     (*pointerMenu)[index] += U"^" + convU32_U8.from_bytes(std::to_string(settCount)); //can't be asked to manage another int (its the same size as an int blow me)
                     
@@ -278,6 +282,7 @@ protected:
     std::vector<std::pair<int, drawMenu*>> executeNewMenu; //takes index and next drawMenu pointer
     std::vector<std::pair<int, PAGE>> executeNewPage; //really only one page but i'd like room to grow in case
     std::vector<std::pair<int, int>> subSelection; //for setting pages with toggleable settings
+    //std::vector<std::pair<int, int>> subSelection;
     std::vector<std::u32string>* pointerMenu;
     std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> convU32_U8; //If used one more time move to Widget
 };

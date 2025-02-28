@@ -5,6 +5,7 @@
 #include "components/ui/ascii_art.hpp"
 #include "components/widgets/drawAscii.hpp"
 #include "components/widgets/drawMenu.hpp"
+#include "components/widgets/drawInput.hpp"
 
 #include <iostream>
 #include <queue>
