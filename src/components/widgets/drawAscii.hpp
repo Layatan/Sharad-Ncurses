@@ -31,7 +31,7 @@ public:
             // else if (bCol == 1000 && rCol != 1000) rCol += rgbStep;
     
             // init_color(8, 876, 375, 555);
-            // init_pair(2, 8, COLOR_RED);
+            // init_pair(3, 8, COLOR_RED);
             // refresh();
             // for (char32_t c : art) {
             //     if (c == U'\n') 

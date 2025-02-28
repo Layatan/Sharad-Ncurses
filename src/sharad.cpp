@@ -17,7 +17,7 @@ void sharad::setup(){
     Menu.push_back({asciiArt::credits.artwork}); //credits
     Menu.push_back({U"Cycle Setting^Setting1^Setting2^Setting3", U"Toggle Setting^On^Off"});
 
-    Menu.push_back({U"New Save:^save name^idk^whats"});
+    Menu.push_back({U"New Save:^[save⌨️name, 20]"});
 
     drawMenu tmproot = {&Menu[0], true};
     rootMenu = tmproot; //not great but this is the three stage initialisation required. Now to do this(kinda) for all of em

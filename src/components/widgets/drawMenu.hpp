@@ -15,7 +15,8 @@ public:
             int index = 0;
             for (auto entry : *pointerMenu) {
                 int curr = 0, tempCurr = 0, tempCurrHigh = 0, settCount = 0;
-                bool isSetting = false;
+                bool isSetting = false, bracketOpen = false, overwriteWidth = false;
+                std::u32string overWrite = U"0"; // default overwrite 
                 std::vector<size_t> indexes;
 
                 for (char32_t c : entry) { //get current entry width  
@@ -27,8 +28,32 @@ public:
                             tempCurr = 0;
 
                             settCount++;
+
+                            bracketOpen = false; //redundancy
+                            overwriteWidth = false;
+                            overWrite = U"0";
                         }
                         else tempCurr++;
+
+                        if (c == U'[' || bracketOpen) {
+                            if(c == U'[' && curr > 2) height++; //if input box has a title go to next line otherwise takeover line
+                            
+                            if (c == U']') {
+                                bracketOpen = false;
+                                overwriteWidth = false;
+                                overWrite = U"0";
+                            } else bracketOpen = true;
+
+                            if (c == U',') overwriteWidth = true;
+                            
+                            if (overwriteWidth) {
+                                if (c >= U'0' && c<=U'9') {
+                                    overWrite += c;
+                                    int potWidth = std::stoi(convU32_U8.to_bytes(overWrite));
+                                    if (potWidth > curr) curr = potWidth;
+                                }
+                            }
+                        }
 
                         continue;
                     }
@@ -40,16 +65,15 @@ public:
                 }
                 
                 if (isSetting == true) {
-                    // if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr; // check for the last setting
+                    if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr; // last setting width check
+                    if (entry.find(U"^[") == std::u32string::npos) //cuz input firld in draw menu hijacks settings - whatever dont judge me
+                        subSelection.push_back(std::make_pair(index, 0));/* TODO: change when save and load implemented (prolly use JSON) */
 
-                    int spacer = 3 + entry.find(U'^'); //incase setting is highlighted (+2) & index -> int shift(+1)
-                    subSelection.push_back(std::make_pair(index, 0));/* TODO: change when save and load implemented (prolly use JSON) */
-                    // int settCount = std::count(entry.begin(), entry.end(), U'^');
+                    int settTitle = 3 + entry.find(U'^'), settGap = 5; //incase setting is highlighted (+2) & index -> int shift(+1)
                     (*pointerMenu)[index] += U"^" + convU32_U8.from_bytes(std::to_string(settCount)); //can't be asked to manage another int (its the same size as an int blow me)
                     
-                    if (settCount == 2) curr = 2 + spacer + 5; //setting option space + settting title space + gap
-                    else curr = tempCurrHigh + spacer + 5; //"Gap" between setting and current toggle
-                    // TODO: wtf is happening it seems like width is getting calculated using the smallest option count but why  
+                    if (settCount == 2) curr = settTitle + settGap + 2; // Title + Gap + Option Width
+                    else curr = settTitle + settGap + tempCurrHigh; //"Gap" between setting and current toggle
                 }
                 
                 if (curr > width) width = curr;
@@ -94,7 +118,7 @@ public:
         }
 
         // box(win, 0, 0); //debug
-        mvwprintw(win,1,1, "h:%d w:%d x:%d y:%d",height, width, x, y); //debug
+        // mvwprintw(win,1,1, "h:%d w:%d x:%d y:%d",height, width, x, y); //debug
         // mvprintw(0,0, "h:%d w:%d x:%d y:%d",height, width, x, y); //debug
         // mvwprintw(win,1,1, "selection:%d count:%ld",selection, (*pointerMenu).size());
 
@@ -144,6 +168,7 @@ public:
             
             // currSpacer += std::count(entry.begin(), entry.end(), '\n'); //incase any multi-lines
             mvwprintw(win, i*2+currSpacer, 3, "%s", convU32_U8.to_bytes(entry.substr(0, entry.find(U'^'))).c_str());
+
             wattroff(win, COLOR_PAIR(2));
             //trippy
             
