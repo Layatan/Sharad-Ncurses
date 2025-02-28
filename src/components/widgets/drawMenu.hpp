@@ -14,20 +14,23 @@ public:
         : pointerMenu(MenuOptions), Widget(0, 0, 0, 3) { 
             int index = 0;
             for (auto entry : *pointerMenu) {
-                int curr = 0, tempCurr = 0, tempCurrHigh = 0;
+                int curr = 0, tempCurr = 0, tempCurrHigh = 0, settCount = 0;
                 bool isSetting = false;
                 std::vector<size_t> indexes;
 
-                for (char32_t c : entry) {
+                for (char32_t c : entry) { //get current entry width  
                     if (c == U'^' || isSetting) {
                         isSetting = true;
                         if (c == U'^') {
-                            if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr;
+                            if (tempCurr > tempCurrHigh) 
+                                tempCurrHigh = tempCurr;
                             tempCurr = 0;
+
+                            settCount++;
                         }
                         else tempCurr++;
 
-                        break;
+                        continue;
                     }
                     if (c == U'\n'){
                         if (curr > width) width = curr;
@@ -37,14 +40,14 @@ public:
                 }
                 
                 if (isSetting == true) {
-                    if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr; // check for the last setting
+                    // if (tempCurr > tempCurrHigh) tempCurrHigh = tempCurr; // check for the last setting
 
-                    int spacer = entry.find(U'^')+3; //incase setting is highlighted (+2) & index -> int shift(+1)
+                    int spacer = 3 + entry.find(U'^'); //incase setting is highlighted (+2) & index -> int shift(+1)
                     subSelection.push_back(std::make_pair(index, 0));/* TODO: change when save and load implemented (prolly use JSON) */
-                    int settCount = std::count(entry.begin(), entry.end(), U'^');
+                    // int settCount = std::count(entry.begin(), entry.end(), U'^');
                     (*pointerMenu)[index] += U"^" + convU32_U8.from_bytes(std::to_string(settCount)); //can't be asked to manage another int (its the same size as an int blow me)
                     
-                    if (settCount == 2) curr = 2 + spacer + 5; //setting space + settting title + gap
+                    if (settCount == 2) curr = 2 + spacer + 5; //setting option space + settting title space + gap
                     else curr = tempCurrHigh + spacer + 5; //"Gap" between setting and current toggle
                     // TODO: wtf is happening it seems like width is getting calculated using the smallest option count but why  
                 }
@@ -91,7 +94,7 @@ public:
         }
 
         // box(win, 0, 0); //debug
-        // mvwprintw(win,1,1, "h:%d w:%d x:%d y:%d",height, width, x, y); //debug
+        mvwprintw(win,1,1, "h:%d w:%d x:%d y:%d",height, width, x, y); //debug
         // mvprintw(0,0, "h:%d w:%d x:%d y:%d",height, width, x, y); //debug
         // mvwprintw(win,1,1, "selection:%d count:%ld",selection, (*pointerMenu).size());
 
